@@ -1,58 +1,48 @@
-# This file is dual licensed under the terms of the Apache License, Version
-# 2.0, and the BSD License. See the LICENSE file in the root of this repository
-# for complete details.
+'''
+Custom exceptions raised by pytz.
+'''
 
-from __future__ import absolute_import, division, print_function
-
-from enum import Enum
-
-
-class _Reasons(Enum):
-    BACKEND_MISSING_INTERFACE = 0
-    UNSUPPORTED_HASH = 1
-    UNSUPPORTED_CIPHER = 2
-    UNSUPPORTED_PADDING = 3
-    UNSUPPORTED_MGF = 4
-    UNSUPPORTED_PUBLIC_KEY_ALGORITHM = 5
-    UNSUPPORTED_ELLIPTIC_CURVE = 6
-    UNSUPPORTED_SERIALIZATION = 7
-    UNSUPPORTED_X509 = 8
-    UNSUPPORTED_EXCHANGE_ALGORITHM = 9
-    UNSUPPORTED_DIFFIE_HELLMAN = 10
-    UNSUPPORTED_MAC = 11
+__all__ = [
+    'UnknownTimeZoneError', 'InvalidTimeError', 'AmbiguousTimeError',
+    'NonExistentTimeError',
+]
 
 
-class UnsupportedAlgorithm(Exception):
-    def __init__(self, message, reason=None):
-        super(UnsupportedAlgorithm, self).__init__(message)
-        self._reason = reason
+class UnknownTimeZoneError(KeyError):
+    '''Exception raised when pytz is passed an unknown timezone.
 
+    >>> isinstance(UnknownTimeZoneError(), LookupError)
+    True
 
-class AlreadyFinalized(Exception):
+    This class is actually a subclass of KeyError to provide backwards
+    compatibility with code relying on the undocumented behavior of earlier
+    pytz releases.
+
+    >>> isinstance(UnknownTimeZoneError(), KeyError)
+    True
+    '''
     pass
 
 
-class AlreadyUpdated(Exception):
-    pass
+class InvalidTimeError(Exception):
+    '''Base class for invalid time exceptions.'''
 
 
-class NotYetFinalized(Exception):
-    pass
+class AmbiguousTimeError(InvalidTimeError):
+    '''Exception raised when attempting to create an ambiguous wallclock time.
+
+    At the end of a DST transition period, a particular wallclock time will
+    occur twice (once before the clocks are set back, once after). Both
+    possibilities may be correct, unless further information is supplied.
+
+    See DstTzInfo.normalize() for more info
+    '''
 
 
-class InvalidTag(Exception):
-    pass
+class NonExistentTimeError(InvalidTimeError):
+    '''Exception raised when attempting to create a wallclock time that
+    cannot exist.
 
-
-class InvalidSignature(Exception):
-    pass
-
-
-class InternalError(Exception):
-    def __init__(self, msg, err_code):
-        super(InternalError, self).__init__(msg)
-        self.err_code = err_code
-
-
-class InvalidKey(Exception):
-    pass
+    At the start of a DST transition period, the wallclock time jumps forward.
+    The instants jumped over never occur.
+    '''
