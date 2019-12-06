@@ -63,7 +63,7 @@ if hasattr(socket, 'inet_pton'):
 else:
     # Maybe we can use ipaddress if the user has urllib3[secure]?
     try:
-        import ipaddress
+        from pip._vendor import ipaddress
 
         def inet_pton(_, host):
             if isinstance(host, bytes):
@@ -238,7 +238,7 @@ def create_urllib3_context(ssl_version=None, cert_reqs=None,
 
     If you wish to enable SSLv3, you can do::
 
-        from urllib3.util import ssl_
+        from pip._vendor.urllib3.util import ssl_
         context = ssl_.create_urllib3_context()
         context.options &= ~ssl_.OP_NO_SSLv3
 
@@ -327,10 +327,7 @@ def ssl_wrap_socket(sock, keyfile=None, certfile=None, cert_reqs=None,
             if e.errno == errno.ENOENT:
                 raise SSLError(e)
             raise
-
-    # Don't load system certs unless there were no CA certs or
-    # SSLContext object specified manually.
-    elif ssl_context is None and hasattr(context, 'load_default_certs'):
+    elif getattr(context, 'load_default_certs', None) is not None:
         # try to load OS default certs; works well on Windows (require Python3.4+)
         context.load_default_certs()
 
